@@ -1,0 +1,75 @@
+# =========================================
+# 🧠 BrainyScout React App - .gitignore
+# =========================================
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+.temp/
+.cache/
+
+# Local environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS / Misc system files
+Thumbs.db
+*.bak
+*.tmp
+*.orig
+
+# Test coverage reports
+coverage/
+
+# Netlify / Firebase / Deployment cache
+.netlify/
+firebase-debug.log
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Temporary uploads or generated assets
+public/uploads/
+public/temp/
+src/assets/generated/
+
+# Optional lock files (if using clean installs)
+# Uncomment if you prefer not to track lock files:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# =========================================
+# ✅ Safe to upload:
+#   - src/
+#   - public/ (excluding uploads/temp)
+#   - package.json
+#   - vite.config.ts / tsconfig.json
+# =========================================

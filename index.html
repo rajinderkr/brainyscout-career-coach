@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Career Clarity Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* For custom scrollbar aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1b4b; /* dark indigo */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5; /* indigo-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6366f1; /* indigo-500 */
+        }
+        
+        /* For animated insight screen */
+        @keyframes fill-progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        @keyframes subtle-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.05); opacity: 1; }
+        }
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(-20px) rotateZ(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotateZ(720deg); opacity: 0; }
+        }
+        @keyframes ripple-effect {
+          0% { transform: scale(1); opacity: 0.5; }
+          100% { transform: scale(3); opacity: 0; }
+        }
+        @keyframes shake-error {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        @keyframes progress-bar-fill {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes progress-bar-fill-slow {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes text-focus-in {
+            0% { filter: blur(12px); opacity: 0; }
+            100% { filter: blur(0px); opacity: 1; }
+        }
+         @keyframes draw-line {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        .line-chart-draw .recharts-area-curve, .line-chart-draw .recharts-line-curve {
+            stroke-dasharray: 1500;
+            stroke-dashoffset: 1500;
+            animation: draw-line 2s ease-out forwards;
+        }
+
+        @keyframes glow-pulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 15px #FFB84D, 0 0 25px #FF7A00;
+            }
+            50% { 
+                transform: scale(1.03);
+                box-shadow: 0 0 25px #FFB84D, 0 0 45px #FF7A00;
+            }
+        }
+        @keyframes bounce-in {
+            0% { transform: scale(0.5) translateY(-50px); opacity: 0; }
+            60% { transform: scale(1.1) translateY(0); opacity: 1; }
+            80% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        /* For custom graph labels with pointers */
+        .graph-label {
+            position: absolute;
+            color: white;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+            padding: 0.5rem 1rem; /* px-4 py-2 */
+            border-radius: 0.5rem; /* rounded-lg */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); /* shadow-lg */
+            z-index: 10;
+        }
+        .graph-label::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+        .graph-label.diy-label {
+            background-color: #D95D39;
+            top: 70%;
+            right: 20%;
+        }
+        .graph-label.diy-label::after {
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 0 8px 8px 8px;
+            border-color: transparent transparent #D95D39 transparent;
+        }
+        .graph-label.expert-label {
+            background-color: #1A8E72;
+            top: 30%;
+            right: 10%;
+        }
+        .graph-label.expert-label::after {
+            bottom: 100%;
+            left: 80%;
+            transform: translateX(-50%);
+            border-width: 0 8px 8px 8px;
+            border-color: transparent transparent #1A8E72 transparent;
+        }
+        .graph-label.now-label {
+            background-color: #4b5563; /* gray-600 */
+            top: 75%;
+            left: 5%;
+        }
+        .graph-label.now-label::after {
+            top: 100%; /* Pointer down */
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0 8px;
+            border-color: #4b5563 transparent transparent transparent;
+        }
+        .graph-label.trajectory-label {
+            background-color: #40f84c; /* yellow-400 */
+            color: #1f2937; /* gray-800 */
+            top: 5%;
+            right: 5%;
+        }
+        .graph-label.trajectory-label::after {
+            top: 100%; /* Pointer down */
+            left: 80%;
+            transform: translateX(-50%);
+            border-width: 8px 8px 0 8px;
+            border-color: #40f84c transparent transparent transparent;
+        }
+
+        /* Print-specific styles for PDF generation */
+       @media print {
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            background-color: #ffffff;
+            color: #000000;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .print-container {
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: none !important;
+        }
+
+        .print-page {
+            box-shadow: none !important;
+            border: none !important;
+            margin: 0 !important;
+            padding: 2.5cm 2cm;
+            width: 100%;
+            background-color: white !important;
+            color: black !important;
+            border-radius: 0 !important;
+
+            /* ✅ NEW: allow internal page breaks */
+            page-break-after: always;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+            min-height: 100vh; /* not fixed height anymore */
+            height: auto !important; /* allow expansion */
+        }
+
+        /* ✅ Prevent elements from splitting mid-section */
+        .break-inside-avoid {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* ✅ Headings should stay with next paragraph */
+        .print-page h1,
+        .print-page h2,
+        .print-page h3 {
+            page-break-after: avoid !important;
+        }
+
+        .print-page h1,
+        .print-page h2,
+        .print-page h3,
+        .print-page h4,
+        .print-page p,
+        .print-page span,
+        .print-page div,
+        .print-page li {
+            color: #1f2937 !important;
+        }
+
+        .print-page .text-brand-accent {
+            color: #D95D39 !important;
+        }
+
+        .print-page hr {
+            border-color: #e5e7eb !important;
+        }
+
+        .print-page .print-bg-subtle {
+            background-color: #f3f4f6 !important;
+        }
+        }
+
+
+
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.548.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^2.13.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+<link rel="icon" href="/favicon.ico" />
+<title>BrainyScout | Job Success System</title>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
