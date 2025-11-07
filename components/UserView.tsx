@@ -317,16 +317,86 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
   
   const totalQuestionScreens = QUESTION_SCREENS.length;
 
-  useEffect(() => {
+    useEffect(() => {
     if (showPlanForPrint) {
-        // Use timeout to allow component to render before printing
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        // 🌀 Create loader overlay only for mobile
+        let loader: HTMLDivElement | null = null;
+        if (isMobile) {
+        loader = document.createElement("div");
+        loader.style.position = "fixed";
+        loader.style.top = "0";
+        loader.style.left = "0";
+        loader.style.width = "100vw";
+        loader.style.height = "100vh";
+        loader.style.background = "rgba(0,0,0,0.6)";
+        loader.style.color = "#fff";
+        loader.style.display = "flex";
+        loader.style.justifyContent = "center";
+        loader.style.alignItems = "center";
+        loader.style.fontSize = "1.25rem";
+        loader.style.zIndex = "9999";
+
+        // ✨ Spinner + text content
+        loader.innerHTML = `
+            <div style="text-align:center">
+            <div class="animate-spin mb-3 border-4 border-white border-t-transparent rounded-full w-10 h-10 mx-auto"></div>
+            📄 Generating your PDF...
+            </div>
+        `;
+
+        document.body.appendChild(loader);
+        }
+
         const timer = setTimeout(() => {
+        if (isMobile) {
+            const element = document.querySelector(".print-container") as HTMLElement;
+            if (element) {
+            import("html2pdf.js").then((html2pdf) => {
+                const opt = {
+                margin: 0.5,
+                filename: "Career-Placement-Plan.pdf",
+                image: { type: "jpeg" as const, quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: {
+                    unit: "in" as const,
+                    format: "a4" as const,
+                    orientation: "portrait" as const,
+                },
+                };
+
+                html2pdf
+                .default()
+                .set(opt)
+                .from(element)
+                .save()
+                .then(() => {
+                    if (loader) document.body.removeChild(loader);
+                    setShowPlanForPrint(false);
+                })
+                .catch(() => {
+                    if (loader) document.body.removeChild(loader);
+                    alert("Something went wrong while generating your PDF.");
+                });
+            });
+            } else {
+            if (loader) document.body.removeChild(loader);
+            alert("PDF content not found — please try again.");
+            }
+        } else {
+            // 💻 Desktop: open print dialog as usual
             window.print();
             setShowPlanForPrint(false);
-        }, 100);
-        return () => clearTimeout(timer);
+        }
+        }, 800);
+
+        return () => {
+        clearTimeout(timer);
+        if (loader) document.body.removeChild(loader);
+        };
     }
-  }, [showPlanForPrint]);
+    }, [showPlanForPrint]);
 
   useEffect(() => {
     fetch('https://ipinfo.io?token=d369b6f31b30af')
