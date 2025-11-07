@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import html2pdf from "html2pdf.js";
 import { Download, ArrowRight, XCircle, CheckCircle, BarChart3, TrendingUp, Briefcase, Zap, Target, Users, Award, Star, FileText, Link, GraduationCap } from 'lucide-react';
 // Note: Assuming 'Answers' type is defined elsewhere in the project environment.
 // import { Answers } from '../types';
@@ -452,8 +453,26 @@ export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({ answers, n
                 <button
                     onClick={() => {
                         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        const element = document.querySelector(".print-container") as HTMLElement;
+
+                        const opt = {
+                        margin: 0.5,
+                        filename: "Career-Placement-Plan.pdf",
+                        image: { type: "jpeg" as const, quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: {
+                            unit: "in" as const,
+                            format: "a4" as const,
+                            orientation: "portrait" as const,
+                        },
+                        };
+
                         if (isMobile) {
-                        alert("Please open this page on a laptop or desktop to download your PDF plan.");
+                        if (element) {
+                            html2pdf().set(opt).from(element).save();
+                        } else {
+                            alert("PDF content not found — please try again.");
+                        }
                         } else {
                         window.print();
                         }
