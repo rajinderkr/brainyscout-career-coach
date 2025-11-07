@@ -1026,7 +1026,7 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
                          <div className="flex justify-center items-center" style={{ animation: 'bounce-in 1s ease-out 0.5s both' }}>
                             <Gift className="w-16 h-16 md:w-20 md:h-20 text-yellow-300" style={{ filter: 'drop-shadow(0 0 10px #facc15)' }} />
                         </div>
-                            <div className="text-base md:text-lg font-semibold line-through opacity-80">Worth $197</div>
+                            <div className="text-base md:text-lg font-semibold line-through opacity-80">Worth $189</div>
                             <div className="text-3xl md:text-4xl font-black tracking-wide">TODAY 100% FREE</div>
                         </div>
                     </div>
@@ -1350,7 +1350,7 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
                 <div className="text-center mb-6">
                     <p className="text-slate-400 line-through text-lg mb-1">Regular Price: {isIndia ? '₹49,000' : '$497'}</p>
                     <p className="text-slate-400 line-through text-xl mb-1">Early Bird Price: {isIndia ? '₹19,000' : '$297'}</p>
-                    <p className="text-4xl md:text-5xl font-extrabold text-green-400 mb-2">YOUR PRICE TODAY: {isIndia ? '₹6,490' : '$197'}</p>
+                    <p className="text-4xl md:text-5xl font-extrabold text-green-400 mb-2">YOUR PRICE TODAY: {isIndia ? '₹6,490' : '$189'}</p>
                     <p className="text-yellow-300 font-bold text-xl mb-3">(60% OFF)</p>
                     <p className="text-orange-400 text-lg">
                         <strong>Next Batch Starts:</strong> {getNextFriday(isIndia)}
@@ -1378,7 +1378,7 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
                         }}
                         className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-5 rounded-full text-xl hover:scale-105 transition-transform shadow-lg shadow-green-500/30 flex items-center justify-center gap-3 text-center"
                         >
-                        YES! I Want to Invest in Myself {isIndia ? '₹6,490' : '$197'}
+                        YES! I Want to Invest in Myself {isIndia ? '₹6,490' : '$189'}
                         </a>
 
 
@@ -1459,7 +1459,7 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
                         <p><span className="font-bold text-slate-300">What's Next:</span> Check your email for access details</p>
                     </div>
                     <div className="bg-green-900/30 border border-green-500/50 rounded-xl p-4 mb-6">
-                        <p className="text-green-400 font-bold mb-2">✅ Your Investment: {location === 'IN' ? '₹6,490' : '$197'}</p>
+                        <p className="text-green-400 font-bold mb-2">✅ Your Investment: {location === 'IN' ? '₹6,490' : '$189'}</p>
                         <p className="text-slate-300 text-sm">Receipt sent to your email</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">

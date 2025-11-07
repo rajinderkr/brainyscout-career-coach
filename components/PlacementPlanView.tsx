@@ -386,7 +386,7 @@ const Page_InvestmentOptions = ({ isIndia }: { isIndia: boolean }) => (
                     ) : (
                         <>
                             <p className="text-2xl text-slate-700 font-semibold">Value: <span className="text-red-500 line-through">$1028</span></p>
-                            <p className="text-5xl font-black text-orange-600 mt-1">$197</p>
+                            <p className="text-5xl font-black text-orange-600 mt-1">$189</p>
                             <p className="text-xl font-extrabold text-green-700 mt-1 bg-green-200 inline-block px-3 py-1 rounded-full shadow-lg">Current Special Offer: FREE</p>
                             <p className='mt-3 text-orange-900 font-semibold'><strong>Timeline:</strong> 30-60 days</p>
                             <p className='text-orange-900 font-semibold'><strong>Success Rate:</strong> 90%+ </p>
@@ -440,7 +440,7 @@ export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({ answers, n
     const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const isIndia = location === 'IN';
     // Dynamic value based on location for the welcome letter
-    const planValue = isIndia ? '₹6490' : '$197';
+    const planValue = isIndia ? '₹6490' : '$189';
     const PplanValue = isIndia ? '₹2490' : '$49';
 
     return (
@@ -450,17 +450,18 @@ export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({ answers, n
             {/* Fixed Buttons for Online View */}
             <div className="fixed top-4 right-4 z-50 flex flex-col gap-4 no-print">
                 <button
-                    onClick={() => window.print()}
+                    onClick={() => {
+                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        if (isMobile) {
+                        alert("Please open this page on a laptop or desktop to download your PDF plan.");
+                        } else {
+                        window.print();
+                        }
+                    }}
                     className="bg-green-500 text-white font-bold py-3 px-5 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-2xl flex items-center gap-2 border-2 border-green-300"
-                >
+                    >
                     <Download size={20} /> Download PDF
-                </button>
-                 <button
-                    onClick={onContinue}
-                    className="bg-gradient-to-r from-orange-500 to-red-500 text-white font-bold py-3 px-5 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-2xl flex items-center gap-2"
-                >
-                    Continue <ArrowRight size={20} />
-                </button>
+                    </button>
             </div>
 
             <div className="max-w-4xl mx-auto space-y-8">
