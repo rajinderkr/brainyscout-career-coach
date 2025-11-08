@@ -274,107 +274,137 @@ type PlanContent = {
 
 
 // --- Sub-components for dynamic content sections (keeping original logic for brevity) ---
-const SolutionPitch = () => (
+const SolutionPitch = ({ type }: { type: "resume" | "linkedin" | "interview" | "default" }) => {
+  const messages = {
+    resume: `In our Job Success System Workshop, you’ll get ATS-friendly resume templates, keyword tools, and expert feedback to fix these exact resume blind spots in under a week.`,
+    linkedin: `Inside the Workshop, you’ll learn how to turn your LinkedIn into a magnet for recruiters — from profile optimization to referral messaging scripts.`,
+    interview: `We guide you through mock interviews, STAR storytelling, and confidence training so you convert interviews into offers consistently.`,
+    default: `In our Job Success System Workshop, we give you personalized templates, coaching, and proven systems to fix these career roadblocks fast.`,
+  };
+
+  return (
     <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm print-bg-subtle">
-        <p className="font-bold text-blue-800">💡 SOLUTION:</p>
-        <p className="text-blue-700">In our <strong>Job Success System Workshop</strong>, we provide proven templates, live coaching, and exclusive tools to fix this exact problem in under a week. You'll learn the strategies that get our clients hired 4x faster.</p>
+      <p className="font-bold text-blue-800">💡 SOLUTION:</p>
+      <p className="text-blue-700">{messages[type] || messages.default}</p>
     </div>
-);
+  );
+};
 
 // BP content components (kept largely same structure)
-const BP_ResumeBlackHole = () => (
-    <>
-        <p><strong>The Problem:</strong> You're applying to 150+ jobs with a generic, one-size-fits-all resume. This "spray and pray" approach has a success rate of less than 2%.</p>
-        <p><strong>Why It's Failing YOU:</strong> 75% of resumes (including yours) are auto-rejected by Applicant Tracking Systems (ATS). For the few that pass, recruiters spend only 6-8 seconds scanning, and yours gets skipped because it doesn't speak directly to the job.</p>
-        <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
-        <ul>
-            <li><strong>Create an ATS-Optimized Master Resume:</strong> Use simple formatting and exact keywords from job descriptions.</li>
-            <li><strong>Switch from Volume to Strategy:</strong> Stop applying to 150 random jobs. Target 30 strategic roles and customize your resume for each (it only takes 15 min with the right system).</li>
-            <li><strong>Transform Your Resume into a Storytelling Document:</strong> Lead with impact and quantified achievements, not just a list of duties.</li>
-        </ul>
-        <SolutionPitch />
-    </>
-);
-const BP_InconsistentResume = () => (
-    <>
-        <p><strong>The Problem:</strong> You're applying to 70-150 jobs and customizing your resume "sometimes." This half-strategy is holding you back because inconsistency kills results.</p>
-        <p><strong>Why It's Failing YOU:</strong> ATS systems are unforgiving—one bad resume means auto-rejection. You're competing against candidates who customize EVERY time, making your "good enough" approach result in no offers.</p>
-        <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
-        <ul>
-            <li><strong>Define Your 15-Minute Customization Process:</strong> Create a system with a master resume and a keyword swap checklist to make tailoring fast and effective.</li>
-            <li><strong>Stop Applying to Low-Probability Jobs:</strong> Only apply if you meet 70%+ of the requirements and prioritize companies where you have connections.</li>
-             <li><strong>Track and Optimize:</strong> Monitor your application-to-response rate to see what's working and double down on that strategy.</li>
-        </ul>
-        <SolutionPitch />
-    </>
+// each BP now accepts props so we can show the user's chosen option dynamically
+const BP_ResumeBlackHole = ({ appsLabel }: { appsLabel: string }) => (
+  <>
+    <p>
+      <strong>The Problem:</strong> You're applying to <strong>{appsLabel}</strong> jobs
+      with a generic, one-size-fits-all resume. This "spray and pray" approach has a very low success rate.
+    </p>
+    <p>
+      <strong>Why It's Failing YOU:</strong> Many resumes are auto-rejected by Applicant Tracking Systems (ATS).
+      Even when a resume passes the bot, recruiters spend only a few seconds scanning — if your resume doesn't
+      speak directly to the role, it gets skipped.
+    </p>
+    <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
+    <ul>
+      <li><strong>Create an ATS-Optimized Master Resume:</strong> Use simple formatting and exact keywords from job descriptions.</li>
+      <li><strong>Switch from Volume to Strategy:</strong> Instead of sending many generic applications, target ~30 strategic roles and customize each resume (it only takes ~15 minutes with the right system).</li>
+      <li><strong>Transform Your Resume into a Storytelling Document:</strong> Lead with impact and quantified achievements, not tasks.</li>
+    </ul>
+    <SolutionPitch type="resume" />
+  </>
 );
 
-const BP_HiddenResumeFormat = () => (
-    <>
-        <p><strong>The Problem:</strong> You're doing the right thing—customizing your resume for every job—but still not getting results. The issue is likely hidden problems you can't see.</p>
-        <p><strong>Why It's Failing YOU:</strong> Your resume format might be ATS-unfriendly (graphics, tables, columns). Even with customization, you could be missing critical keywords or using weak language that doesn't highlight your impact.</p>
-        <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
-        <ul>
-            <li><strong>Run Your Resume Through an ATS Checker:</strong> You must test your resume against job descriptions to see your compatibility score before you hit send.</li>
-            <li><strong>Master Achievement-Based Writing:</strong> Your customization needs to highlight results, not just tasks. Use the STAR method (Situation-Task-Action-Result) for every bullet point.</li>
-        </ul>
-       <SolutionPitch />
-    </>
+const BP_InconsistentResume = ({ appsLabel }: { appsLabel: string }) => (
+  <>
+    <p><strong>The Problem:</strong> You sometimes customize your resume but not consistently. When you apply to <strong>{appsLabel}</strong> roles inconsistently, results drop.</p>
+    <p><strong>Why It's Failing YOU:</strong> ATS and hiring managers prefer consistency — inconsistent tailoring reduces your chance to get noticed.</p>
+    <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
+    <ul>
+      <li><strong>Define a 15-minute customization process:</strong> Create a master resume and a keyword-swap checklist to make tailoring fast and repeatable.</li>
+      <li><strong>Apply selectively:</strong> Prioritize roles where you meet ~70%+ of requirements and where you can use referrals.</li>
+      <li><strong>Track & iterate:</strong> Measure application → reply rate and double down on what works.</li>
+    </ul>
+    <SolutionPitch type="resume" />
+  </>
 );
 
-const BP_ATSBlindSpot = () => (
-    <>
-        <p><strong>The Problem:</strong> You don't check your resume for ATS compatibility. This single oversight is costing you 75% of opportunities before a human ever sees your application.</p>
-        <p><strong>Why It's Devastating:</strong> 90% of companies use ATS. Missing keywords or using formats it can't read (like tables, graphics, or columns) means an instant rejection, no second chances. You could be the perfect candidate, but a robot filter is blocking you.</p>
-        <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
-        <ul>
-            <li><strong>Learn ATS-Friendly Formatting:</strong> Use standard fonts, standard section headings, and save as .docx unless specified otherwise.</li>
-            <li><strong>Master Keyword Optimization:</strong> Mirror the language from the job description in your resume to ensure you pass the initial scan.</li>
-            <li><strong>Test Every Resume Before Sending:</strong> Use an ATS checker to get a compatibility score and fix issues before you apply.</li>
-        </ul>
-        <SolutionPitch />
-    </>
+const BP_HiddenResumeFormat = ({ appsLabel }: { appsLabel: string }) => (
+  <>
+    <p><strong>The Problem:</strong> You're customizing but still not getting results. Even applying to <strong>{appsLabel}</strong> jobs won't help if your resume format hides your value.</p>
+    <p><strong>Why It's Failing YOU:</strong> Visual formatting (tables, graphics, columns) or missing keywords can make a resume unreadable for ATS or confusing for recruiters.</p>
+    <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
+    <ul>
+      <li><strong>Run an ATS check:</strong> Test your resume against target job descriptions and fix compatibility issues.</li>
+      <li><strong>Rewrite bullets with impact:</strong> Use the STAR approach and measurable results for each role.</li>
+    </ul>
+    <SolutionPitch type="resume" />
+  </>
 );
 
-const BP_LinkedInInvisibility = () => (
-    <>
-        <p><strong>The Problem:</strong> You're not active on LinkedIn or have a small network. This makes you invisible to 70% of job opportunities found through recruiters and the hidden job market.</p>
-        <p><strong>Why This Hurts:</strong> Recruiters actively search for candidates on LinkedIn. An incomplete or inactive profile means you won't show up. Furthermore, a strong network is key to getting referrals, which have a 40% higher conversion rate.</p>
-        <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
-        <ul>
-            <li><strong>Optimize Your LinkedIn Profile:</strong> Transform it into a compelling story with a professional photo, a value-driven headline, and an achievement-rich summary.</li>
-            <li><strong>Build Strategic Connections:</strong> Aim to get from your current number to 500+ relevant connections within 30 days using a targeted strategy.</li>
-            <li><strong>Activate Your Network for Referrals:</strong> Engage with your connections' posts and learn how to ask for informational interviews and referrals effectively.</li>
-        </ul>
-        <SolutionPitch />
-    </>
+const BP_ATSBlindSpot = ({ appsLabel }: { appsLabel: string }) => (
+  <>
+    <p><strong>The Problem:</strong> You may not be checking your resume for ATS compatibility — this can block candidates applying to <strong>{appsLabel}</strong> roles before a human ever sees them.</p>
+    <p><strong>Why It's Devastating:</strong> Many companies use ATS. Missing keywords or unreadable formats mean immediate rejection.</p>
+    <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
+    <ul>
+      <li><strong>Use ATS-friendly formatting:</strong> Standard fonts, headings, and .docx unless otherwise asked.</li>
+      <li><strong>Mirror job language:</strong> Match keywords and phrasing from the description.</li>
+      <li><strong>Test every resume:</strong> Fix issues before applying.</li>
+    </ul>
+    <SolutionPitch type="resume" />
+  </>
 );
 
-const BP_ApplicationBlackHole = () => (
-    <>
-        <p><strong>The Problem:</strong> You've applied to 50+ jobs but haven't gotten a single interview. This indicates a systematic problem, not just bad luck. Continuing to apply more will not fix a broken process.</p>
-        <p><strong>Why Nothing Is Working:</strong> The most likely cause is that your resume isn't passing ATS screening. Other factors could be applying to wrong-fit roles or not leveraging networking for internal advocacy.</p>
-        <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
-        <ul>
-            <li><strong>STOP applying immediately and diagnose the problem.</strong> Get an expert resume review to identify your blind spots.</li>
-            <li><strong>Learn the hidden job market strategies.</strong> 80% of jobs aren't posted online. Stop fishing in the most crowded pond and learn how to find opportunities through networking.</li>
-        </ul>
-        <SolutionPitch />
-    </>
+const BP_ApplicationBlackHole = ({ appsLabel }: { appsLabel: string }) => (
+  <>
+    <p><strong>The Problem:</strong> You've applied to <strong>{appsLabel}</strong> jobs but received few/no interviews — this points to a systematic problem rather than bad luck.</p>
+    <p><strong>Why Nothing Is Working:</strong> Common causes include ATS failure, poor targeting, or not leveraging networking and referrals.</p>
+    <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
+    <ul>
+      <li><strong>Pause bulk applications:</strong> Diagnose by testing a small batch of highly targeted applications.</li>
+      <li><strong>Get an expert review:</strong> Check ATS compatibility and message/keyword alignment.</li>
+      <li><strong>Activate networking:</strong> Target referrals and informational chats instead of posting blind applications.</li>
+    </ul>
+    <SolutionPitch type="resume" />
+  </>
 );
-const BP_InterviewConversion = () => (
-    <>
-        <p><strong>The Problem:</strong> You're getting interviews (which means your resume works!), but you're not converting them into offers. You're getting so close but losing at the finish line.</p>
-        <p><strong>Why Interviews Aren't Converting:</strong> This usually comes down to a few key areas: a weak "Tell me about yourself" answer, rambling responses that don't follow the STAR method, not asking strategic questions, or failing to follow up effectively.</p>
-        <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
-        <ul>
-            <li><strong>Master Your 2-Minute Pitch:</strong> Craft and practice a compelling story that connects your experience to the company's needs.</li>
-            <li><strong>Prepare 15 STAR Stories:</strong> Have structured, quantifiable examples of your achievements ready for any behavioral question.</li>
-            <li><strong>Practice Mock Interviews:</strong> You can't "wing it" and expect to beat candidates who are highly prepared. Get feedback and refine your answers.</li>
-        </ul>
-        <SolutionPitch />
-    </>
+
+const BP_InterviewConversion = ({ appsLabel }: { appsLabel: string }) => (
+  <>
+    <p><strong>The Problem:</strong> You're getting interviews around your applications to <strong>{appsLabel}</strong> roles but not converting them into offers.</p>
+    <p><strong>Why Interviews Aren't Converting:</strong> Often due to weak storytelling, lack of structured STAR answers, or not asking strategic questions.</p>
+    <p className="font-bold text-slate-800 text-lg mt-4">🔧 <strong>What You MUST Do to Fix This:</strong></p>
+    <ul>
+      <li><strong>Master a 2-minute pitch:</strong> Clear, compelling connection between your experience and the role.</li>
+      <li><strong>Prepare STAR stories:</strong> Have measurable examples for core competencies.</li>
+      <li><strong>Mock interviews:</strong> Practice with feedback.</li>
+    </ul>
+    <SolutionPitch type="interview" />
+  </>
 );
+const BP_LinkedInInvisibility = ({ linkedinLabel }: { linkedinLabel?: string }) => (
+  <>
+    <p>
+      <strong>The Problem:</strong> Your LinkedIn profile shows{" "}
+      <strong>{linkedinLabel || "low activity"}</strong> and limited networking — this keeps you hidden from recruiters.
+    </p>
+    <p>
+      <strong>Why This Hurts:</strong> Over 70% of jobs are found through recruiters or referrals on LinkedIn. 
+      Without a visible and active profile, you're missing opportunities daily.
+    </p>
+
+    <p className="font-bold text-slate-800 text-lg mt-4">
+      🔧 <strong>What You MUST Do to Fix This:</strong>
+    </p>
+    <ul>
+      <li><strong>Optimize Your Profile:</strong> Use a professional photo, add a compelling headline, and write a results-driven “About” section.</li>
+      <li><strong>Grow Strategically:</strong> Add 20–30 new relevant professionals weekly until you reach 500+ connections.</li>
+      <li><strong>Engage Weekly:</strong> Comment, post insights, and interact with industry discussions to stay visible.</li>
+    </ul>
+
+    <SolutionPitch type="linkedin" />
+  </>
+);
+
 // Strength content components (kept largely same structure)
 const Strength_LinkedIn = () => (
     <>
@@ -472,51 +502,154 @@ const generatePlanContent = (answers: any, userLocation: string): PlanContent =>
   const bpAdded = new Set<string>();
   let blockingPoints: { title: string; content: React.ReactNode }[] = [];
   let strengths: { title: string; content: React.ReactNode }[] = [];
+  // human-friendly label for applications
+const formatApplicationsLabel = (val?: string) => {
+  if (!val) return "multiple";
+  switch (val) {
+    case "under10": return "under 10";
+    case "10-30": return "10–30";
+    case "30-70": return "30–70";
+    case "70-150": return "70–150";
+    case "150+": return "150+";
+    case "0-20": return "0–20";
+    default: return String(val);
+  }
+};
+
 
   // --- 1️⃣ Alias mapping: handles alternate or camelCase keys ---
-  const a = {
-    ...answers,
-    challenge: answers.challenge || answers.primary_challenge,
-    applications: answers.applications || answers.application_volume,
-    resume_strategy: answers.resume_strategy || answers.resumeStrategy,
-    linkedin: answers.linkedin || answers.linkedin_presence,
-    interviews: answers.interviews || answers.interview_count,
-    timeline: answers.timeline || answers.timeline_goal,
-    career_stage: answers.career_stage || answers.careerStage,
-    salary: answers.salary,
-  };
+// --- 1️⃣ Normalize Aliases ---
+const a = {
+  ...answers,
+  challenge: answers.challenge || answers.primary_challenge,
+  applications: answers.applications || answers.application_volume,
+  resume_strategy: answers.resume_strategy || answers.resumeStrategy,
+  linkedin: answers.linkedin || answers.linkedin_presence,
+  interviews: answers.interviews || answers.interview_count,
+  timeline: answers.timeline || answers.timeline_goal,
+  career_stage: answers.career_stage || answers.careerStage,
+  salary: answers.salary,
+};
 
-  // --- 2️⃣ Blocking Points Logic ---
-  if (a.applications === '150+' || a.resume_strategy === 'same') {
-    blockingPoints.push({ title: "Resume Black Hole Syndrome", content: <BP_ResumeBlackHole /> });
-  }
-  if (a.linkedin === 'not_active' || a.linkedin === 'under100') {
-    blockingPoints.push({ title: "LinkedIn Invisibility", content: <BP_LinkedInInvisibility /> });
-  }
-  if (a.interviews === '1-2' || a.interviews === '3-5') {
-    blockingPoints.push({ title: "Interview Conversion Problem", content: <BP_InterviewConversion /> });
-  }
+const appsLabel = formatApplicationsLabel(a.applications);
 
-  while (blockingPoints.length < 3) {
-    if (blockingPoints.length === 0)
-      blockingPoints.push({ title: "The ATS Blind Spot", content: <BP_ATSBlindSpot /> });
-    else if (blockingPoints.length === 1 && !blockingPoints.some(bp => bp.title.includes('LinkedIn')))
-      blockingPoints.push({ title: "LinkedIn Invisibility", content: <BP_LinkedInInvisibility /> });
-    else if (blockingPoints.length === 2 && !blockingPoints.some(bp => bp.title.includes('Interview')))
-      blockingPoints.push({ title: "Interview Conversion Problem", content: <BP_InterviewConversion /> });
-    else break;
-  }
-  blockingPoints = blockingPoints.slice(0, 3);
+// --- Blocking Points Logic (replace existing pushes) ---
+if (a.resume_strategy === "same" || a.applications === "150+") {
+  blockingPoints.push({ title: "Resume Black Hole Syndrome", content: <BP_ResumeBlackHole appsLabel={appsLabel} /> });
+} else if (a.resume_strategy === "minor_tweaks" || a.resume_strategy === "partial") {
+  blockingPoints.push({ title: "Inconsistent Resume Strategy", content: <BP_InconsistentResume appsLabel={appsLabel} /> });
+} else if (a.resume_strategy === "tailor_ats" || a.resume_strategy === "custom_no_ats") {
+  blockingPoints.push({ title: "Hidden Resume Format Issues", content: <BP_HiddenResumeFormat appsLabel={appsLabel} /> });
+}
 
-  // --- 3️⃣ Strengths Logic ---
-  if (a.linkedin && ['500+', '1000+'].includes(a.linkedin)) {
-    strengths.push({ title: "Strong LinkedIn Network", content: <Strength_LinkedIn /> });
-  } else if (a.resume_strategy === 'tailor_ats') {
-    strengths.push({ title: "Attention to Detail & Technical Savvy", content: <Strength_ATS /> });
+const linkedinLabel =
+  a.linkedin === "not_active"
+    ? "inactive status"
+    : a.linkedin === "under100"
+    ? "under 100 connections"
+    : "limited engagement";
+
+if (a.linkedin === "not_active" || a.linkedin === "under100") {
+  blockingPoints.push({
+    title: "LinkedIn Invisibility",
+    content: <BP_LinkedInInvisibility linkedinLabel={linkedinLabel} />,
+  });
+}
+
+if (["none", "under10"].includes(a.interviews) && ["10-30", "30-70"].includes(a.applications)) {
+  blockingPoints.push({ title: "Application Targeting Problem", content: <BP_ApplicationBlackHole appsLabel={appsLabel} /> });
+} else if (["3-5", "offers", "interviewing"].includes(a.interviews)) {
+  blockingPoints.push({ title: "Interview Conversion Problem", content: <BP_InterviewConversion appsLabel={appsLabel} /> });
+}
+
+// --- 3️⃣ Fallback if No Personal Blocking Points Found ---
+if (blockingPoints.length === 0) {
+  // No personal blockers found
+  blockingPoints.push({
+    title: "Hidden Resume Optimization Gaps",
+    content: (
+      <>
+        <p><strong>The Insight:</strong> Even strong resumes often fail due to missing keywords, weak formatting, or vague achievements.</p>
+        <p><strong>What to Do:</strong> Run an ATS compatibility check and rewrite key bullet points with measurable results. Small changes can boost responses by 50%.</p>
+        <SolutionPitch type="resume" />
+      </>
+    ),
+  });
+  blockingPoints.push({
+    title: "Networking Opportunity Missed",
+    content: (
+      <>
+        <p><strong>The Insight:</strong> Over 70% of job offers come through referrals or LinkedIn connections — not job portals.</p>
+        <p><strong>What to Do:</strong> Identify 10 professionals in your field and start short, informational chats to build referral opportunities.</p>
+        <SolutionPitch type="linkedin" />
+      </>
+    ),
+  });
+} else if (blockingPoints.length === 1) {
+  // Only one blocker found → add a smart companion insight
+  const primary = blockingPoints[0].title.toLowerCase();
+
+  if (primary.includes("resume")) {
+    blockingPoints.push({
+      title: "Networking Opportunity Missed",
+      content: (
+        <>
+          <p><strong>The Insight:</strong> Even with a strong resume, lack of network visibility slows results.</p>
+          <p><strong>What to Do:</strong> Engage actively on LinkedIn, post once a week, and connect with 5 recruiters in your target field.</p>
+          <SolutionPitch type="linkedin" />
+        </>
+      ),
+    });
+  } else if (primary.includes("linkedin")) {
+    blockingPoints.push({
+      title: "Hidden Resume Optimization Gaps",
+      content: (
+        <>
+          <p><strong>The Insight:</strong> LinkedIn visibility helps — but without an ATS-optimized resume, many opportunities are still missed.</p>
+          <p><strong>What to Do:</strong> Use a resume scan to identify missing keywords and fix your format for higher compatibility.</p>
+          <SolutionPitch type="linkedin" />
+        </>
+      ),
+    });
+  } else {
+    blockingPoints.push({
+      title: "ATS Optimization Opportunity",
+      content: (
+        <>
+          <p><strong>The Insight:</strong> Your approach is solid, but your resume may not be fully optimized for automated systems.</p>
+          <p><strong>What to Do:</strong> Test your resume through an ATS checker to raise visibility by 2x.</p>
+          <SolutionPitch type="resume" />
+        </>
+      ),
+    });
   }
-  if (strengths.length === 0) {
-    strengths.push({ title: "Determination & Resilience", content: <Strength_Default /> });
-  }
+}
+
+// ✅ Clean duplicates and limit to 3 total
+blockingPoints = [
+  ...new Map(blockingPoints.map(bp => [bp.title, bp])).values(),
+].slice(0, 3);
+
+
+// --- 4️⃣ Strengths Logic ---
+if (a.linkedin && ["500+", "1000+"].includes(a.linkedin)) {
+  strengths.push({
+    title: "Strong LinkedIn Network",
+    content: <Strength_LinkedIn />,
+  });
+} else if (a.resume_strategy === "tailor_ats") {
+  strengths.push({
+    title: "Attention to Detail & Technical Savvy",
+    content: <Strength_ATS />,
+  });
+}
+
+if (strengths.length === 0) {
+  strengths.push({
+    title: "Determination & Resilience",
+    content: <Strength_Default />,
+  });
+}
 
   // --- 4️⃣ Summary Section (uses aliased `a`) ---
   const summary = {
@@ -695,7 +828,6 @@ const Page_SuccessKit = () => (
     </div>
 );
 
-
 // Page_InvestmentOptions with conditional pricing logic
 const Page_InvestmentOptions = ({ isIndia }: { isIndia: boolean }) => (
      <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100">
@@ -777,7 +909,6 @@ const Page_SuccessStories = () => (
         </div>
     </div>
 );
-
 
 // Required for the component to be callable in the environment
 export default PlacementPlanView;

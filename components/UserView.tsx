@@ -1521,32 +1521,77 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
     }
     
     if (currentScreen === 29) { // Declined Offer - Free Plan Only
-        return (
-            <div className="min-h-screen flex items-center justify-center p-6">
-                <div className="max-w-xl text-center bg-[#4314A0]/50 border border-[#A76EFF]/40 p-10 rounded-2xl">
-                    <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-6"/>
-                    <h1 className="text-4xl font-bold mb-4">Your Plan is Ready!</h1>
-                    <p className="text-slate-200 text-lg mb-6">You can download your personalized Career Placement Plan below. We've also sent a copy to your inbox. Best of luck!</p>
-                    
-                    <button
-                        onClick={handleDownloadPlan}
-                        className="bg-green-600 text-white font-bold py-4 px-8 rounded-full text-xl transition-all duration-300 hover:bg-green-700 shadow-lg flex items-center gap-3 mx-auto mb-8"
-                    >
-                        <Download size={24} /> Download Your Plan Now
-                    </button>
-                    
-                    <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-xl p-4 mb-6">
-                        <p className="text-yellow-300 font-bold mb-2">💡 Changed Your Mind?</p>
-                        <p className="text-slate-300 text-sm mb-4">The workshop offer is available in your email at regular pricing. Join anytime!</p>
-                        <button onClick={() => setCurrentScreen(26)} className="text-orange-400 hover:text-orange-300 underline text-sm">
-                            View Workshop Details Again
-                        </button>
-                    </div>                    
-                    <p className="text-slate-400 text-sm">Good luck with your job search! 🎯</p>
-                </div>
-            </div>
-        );
-    }
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="max-w-2xl text-center bg-[#4314A0]/50 border border-[#A76EFF]/40 p-10 rounded-2xl shadow-2xl">
+        <CheckCircle className="w-20 h-20 text-green-400 mx-auto mb-6" />
+        <h1 className="text-4xl font-bold mb-4 text-white">Your Plan is Ready!</h1>
+        <p className="text-slate-200 text-lg mb-6">
+          You can download your personalized Career Placement Plan below. We've also sent a copy to your inbox.
+        </p>
+
+        {/* ✅ Download Button */}
+        <button
+          onClick={handleDownloadPlan}
+          className="bg-green-600 text-white font-bold py-4 px-8 rounded-full text-xl transition-all duration-300 hover:bg-green-700 shadow-lg flex items-center gap-3 mx-auto mb-10"
+        >
+          <Download size={24} /> Download Your Plan Now
+        </button>
+
+        {/* ✅ Webinar Promo Section */}
+        <div className="bg-slate-800/50 p-5 rounded-xl border border-slate-700 text-center mb-10">
+          <div className="relative border-4 border-green-400 mx-auto mb-4 overflow-hidden rounded-xl shadow-lg shadow-green-500/30">
+            <iframe
+              src="https://player.vimeo.com/video/1014374153"
+              className="w-full h-64 rounded-xl"
+              allow="autoplay; fullscreen; picture-in-picture"
+              allowFullScreen
+              title="BrainyScout Webinar"
+            ></iframe>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+            <p className="text-green-400 font-bold text-sm">🎓 Job Success System Webinar</p>
+            <p className="text-slate-400 text-xs">| Hosted by <strong className="text-white">Rajinder Kumar</strong> |</p>
+            <span className="text-yellow-400 text-sm">{'⭐'.repeat(5)}</span>
+          </div>
+
+          <p className="text-slate-300 mb-4 text-sm">
+            Learn proven strategies to get hired faster and land your dream job — just like our students did.
+          </p>
+
+          <a
+            href="https://brainyscout.com/job-success-system-webinar"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block bg-green-500 text-white font-bold py-3 px-6 rounded-full text-lg shadow-md hover:bg-green-600 transition-all duration-300"
+          >
+            🎥 Register for Free Webinar
+          </a>
+        </div>
+
+        {/* ✅ Optional “Changed Mind” section */}
+        <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-xl p-4 mb-6">
+          <p className="text-yellow-300 font-bold mb-2">💡 Changed Your Mind?</p>
+          <p className="text-slate-300 text-sm mb-4">
+            The workshop offer is available in your email at regular pricing. Join anytime!
+          </p>
+          <button
+            onClick={() => setCurrentScreen(26)}
+            className="text-orange-400 hover:text-orange-300 underline text-sm"
+          >
+            View Workshop Details Again
+          </button>
+        </div>
+
+        <p className="text-slate-400 text-sm mt-4">
+          Good luck with your job search! 🎯
+        </p>
+      </div>
+    </div>
+  );
+}
+
     return <div className="min-h-screen flex items-center justify-center"><p>Loading...</p></div>;
   };
   
