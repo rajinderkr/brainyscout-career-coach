@@ -337,7 +337,7 @@ const Page_SuccessKit = () => (
         
         <div className="space-y-6">
             <div className='bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400'>
-                <h3 className="font-bold text-xl text-blue-800 flex items-center gap-2"><Briefcase size={20}/> The ATS-Optimized Resume Toolkit</h3>
+                <h3 className="font-bold text-xl text-blue-800 flex items-center gap-2"><Briefcase size={20}/> The ATS-Optimized Resume Toolkit <a href="https://resumegen.io" target="_blank" rel="noopener noreferrer"> [ResumeGen.io]</a></h3>
                 <p className="text-slate-700 mt-2">You need a resume that beats the bots (ATS) and excites the human recruiter. This includes custom templates, keyword density analysis, and quantifiable accomplishment statements (e.g., via Resumegen.io).</p>
             </div>
             <div className='bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400'>
@@ -373,7 +373,7 @@ const Page_InvestmentOptions = ({ isIndia }: { isIndia: boolean }) => (
                     {isIndia ? (
                         <>
                             <p className="text-2xl text-slate-700 font-semibold">Value: <span className="text-red-500 line-through">₹20,000</span></p>
-                            <p className="text-5xl font-black text-orange-600 mt-1">₹6,490</p>
+                            <p className="text-5xl font-black mt-1">₹6,490</p>
                             <p className="text-xl font-extrabold text-green-700 mt-1 bg-green-200 inline-block px-3 py-1 rounded-full shadow-lg">Current Special Offer: FREE</p>
                             <p className='mt-3 text-orange-900 font-semibold'><strong>Timeline:</strong> 30-60 days</p>
                             <p className='text-orange-900 font-semibold'><strong>Success Rate:</strong> 90%+ </p>
@@ -545,7 +545,7 @@ useEffect(() => {
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* PAGE 1: COVER PAGE - Added user details */}
                 <div className="print-page bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center text-center p-8 h-[90vh] border-4 border-indigo-200/50">
-                    <img src="https://www.brainyscout.com/Content/images/logo.png" alt="BrainyScout Logo" className="h-10 w-auto mb-12"/>
+                    <img src="https://www.brainyscout.com/Content/images/logo.png" alt="BrainyScout Logo" className="h-10 w-auto mb-4"/>
                     <h1 className="text-4xl md:text-6xl font-extrabold text-slate-800 mt-12 mb-4">YOUR PERSONALIZED CAREER</h1>
                     <h1 className="text-4xl md:text-6xl font-extrabold text-purple-600 mb-12">PLACEMENT PLAN</h1>
                     

@@ -1213,8 +1213,8 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
             ✅ SUCCESS! Your Free Placement Plan is On Its Way!
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-             🎉 Your personalized <span className="font-semibold text-orange-400">Career Placement Plan</span> 
-                is ready! You can download it instantly using the button below.
+             🎉 Your personalized <span className="font-semibold text-orange-400">Career Placement Plan </span> 
+                 is ready! You can download it instantly using the button below.
           </p>
         </div>
 
@@ -1470,7 +1470,7 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
             <div className="mt-6 text-center">
               <button
                 onClick={() => setCurrentScreen(29)}
-                className="w-full py-3 mt-4 rounded-xl border border-gray-500 text-slate-300 font-semibold text-sm bg-transparent hover:bg-slate-800 hover:text-white transition-all duration-300 shadow-md"
+                className="w-full py-3 mt-4 rounded-xl border border-gray-500 text-slate-300 font-semibold text-sm bg-orange-700 hover:bg-slate-800 hover:text-white transition-all duration-300 shadow-md"
                 >
                 No Thanks, I'll Try Alone — Just Give Me the Plan
                 </button>
