@@ -348,7 +348,7 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
     if (isQuestionInsightScreen) {
       const timer = setTimeout(() => {
         setCurrentScreen(cs => cs + 1);
-      }, 3000);
+      }, 4000);
       return () => clearTimeout(timer);
     }
     
