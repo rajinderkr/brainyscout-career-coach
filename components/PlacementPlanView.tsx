@@ -552,7 +552,7 @@ useEffect(() => {
                     <div className="bg-indigo-50 p-6 rounded-xl shadow-lg border-l-4 border-purple-500 max-w-sm w-full">
                         <p className="text-xl font-semibold text-slate-700">Prepared For:</p>
                         <p className="text-3xl font-extrabold text-indigo-900 mt-1 mb-2">{name || 'Valued Professional'}</p>
-                        <p className="text-slate-600">Location: <span className="font-semibold">{location}</span> | Date: {currentDate}</p>
+                        <p className="text-slate-600">Date: {currentDate}</p>
                     </div>
 
                     <div className="mt-auto pt-12">
