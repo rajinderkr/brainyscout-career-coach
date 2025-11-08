@@ -22,6 +22,257 @@ type PlanContent = {
   successProbability?: { current: number; optimized: number }; // ✅ optional now
 };
 
+        export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({
+        answers,
+        name,
+        onContinue,
+        location: userLocation, // ✅ alias avoids global conflict
+        successProbability,
+        email,
+        shouldSendToWebhook
+        }) => {
+        const normalizedAnswers = useMemo(
+            () =>
+            Object.fromEntries(
+                Object.entries(answers || {}).map(([k, v]) => [
+                k.replace(/^q\d+_/, "")
+                    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+                    .toLowerCase(),
+                v,
+                ])
+            ),
+            [answers]
+        );
+
+        const userEmail = email || answers?.email || "unknown@example.com";
+        const planData = useMemo(() => generatePlanContent(normalizedAnswers, userLocation), [normalizedAnswers, userLocation]);
+        const finalSuccessProbability = successProbability || planData.successProbability || { current: 35, optimized: 90 };
+        const firstName = name ? name.split(" ")[0] : "there";
+        const currentDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+        const isIndia = userLocation === "IN";
+
+
+    useEffect(() => {
+    if (!shouldSendToWebhook) return; // Only trigger when flagged true
+
+    const sendPDFToWebhook = async () => {
+        try {
+        const element = document.querySelector(".print-container") as HTMLElement;
+        if (!element) {
+            console.warn("⚠️ No print-container found for PDF generation");
+            return;
+        }
+
+        const html2pdfLib = await import("html2pdf.js");
+        const opt = {
+            margin: 0.5,
+            filename: "Career-Placement-Plan.pdf",
+            image: { type: "jpeg" as const, quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
+        };
+
+        const pdfBlob = await html2pdfLib.default().set(opt).from(element).outputPdf("blob");
+
+        const webhookUrl = "https://hook.us2.make.com/c6yh9h0lq58aca3iwp42uk7fu8b37rey";
+        const formData = new FormData();
+        formData.append("email", email || "unknown@example.com");
+        formData.append("location", userLocation);
+        formData.append("file", pdfBlob, "Career-Placement-Plan.pdf");
+
+        await fetch(webhookUrl, {
+            method: "POST",
+            body: formData,
+            mode: "no-cors", // Required for local development
+        });
+
+        console.log("✅ PDF successfully sent to Make webhook!");
+        } catch (err) {
+        console.error("❌ Failed to send PDF to webhook:", err);
+        }
+    };
+
+    const timer = setTimeout(sendPDFToWebhook, 2000);
+    return () => clearTimeout(timer);
+    }, [shouldSendToWebhook, email, location]);
+
+    // Dynamic value based on location for the welcome letter
+    const planValue = isIndia ? '₹6490' : '$189';
+    const PplanValue = isIndia ? '₹2490' : '$49';    
+
+    return (
+        // Main container adjusted for better visual appeal, using a deep purple gradient with dark text.
+        <div className="bg-gradient-to-b from-indigo-900 via-gray-900 to-purple-900 p-4 md:p-8 min-h-screen font-sans text-gray-800 print-container">
+            
+            {/* Fixed Buttons for Online View */}
+            <div className="fixed top-4 right-4 z-50 flex flex-col gap-4 no-print">
+                <button
+  onClick={() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const element = document.querySelector(".print-container") as HTMLElement;
+
+    const opt = {
+      margin: 0.5,
+      filename: "Career-Placement-Plan.pdf",
+      image: { type: "jpeg" as const, quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
+    };
+
+    if (!element) {
+      alert("PDF content not found — please try again.");
+      return;
+    }
+
+    // 🖨️ Only handle download/print, no webhook call
+    if (isMobile) {
+      import("html2pdf.js").then((html2pdf) => {
+        html2pdf.default().set(opt).from(element).save();
+      });
+    } else {
+      window.print();
+    }
+  }}
+  className="bg-green-500 text-white font-bold py-3 px-5 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-2xl flex items-center gap-2 border-2 border-green-300"
+>
+  <Download size={20} /> Download PDF
+</button>
+</div>
+
+ <div className="max-w-4xl mx-auto space-y-8">
+                {/* PAGE 1: COVER PAGE - Added user details */}
+                <div className="print-page bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center text-center p-8 h-[90vh] border-4 border-indigo-200/50">
+                    <img src="https://www.brainyscout.com/Content/images/logo.png" alt="BrainyScout Logo" className="h-10 w-auto mb-4"/>
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-slate-800 mt-12 mb-4">YOUR PERSONALIZED CAREER</h1>
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-purple-600 mb-12">PLACEMENT PLAN</h1>
+                    
+                    <div className="bg-indigo-50 p-6 rounded-xl shadow-lg border-l-4 border-purple-500 max-w-sm w-full">
+                        <p className="text-xl font-semibold text-slate-700">Prepared For:</p>
+                        <p className="text-3xl font-extrabold text-indigo-900 mt-1 mb-2">{name || 'Valued Professional'}</p>
+                        <p className="text-slate-600">Date: {currentDate}</p>
+                    </div>
+
+                    <div className="mt-auto pt-12">
+                         <p className="text-2xl font-semibold text-slate-700 italic">"Your Roadmap to Landing Your Dream Job in 45 Days"</p>
+                         <p className="text-sm text-slate-500 mt-4">Powered by <a href="https://brainyscout.com">www.brainyScout.com</a></p>
+                    </div>
+                </div>
+
+                {/* PAGE 2: WELCOME LETTER - Plan value updated */}
+                <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100">
+                    <h2 className="text-3xl font-bold text-slate-800 mb-6">Dear {firstName},</h2>
+                    <div className="space-y-4 text-slate-700 text-lg leading-relaxed">
+                        <p>Congratulations on taking the first step toward transforming your career!</p>
+                        <p>Based on your responses to our comprehensive career assessment, we've created this personalized placement plan specifically for <b>YOU</b>.</p>
+                        <p>This isn't a generic report. Every insight, recommendation, and action step in this document is tailored to your unique situation, challenges, and goals.</p>
+                        <p className="font-semibold text-slate-800">Inside, you'll discover:</p>
+                        <ul className="list-disc list-inside space-y-2 pl-4">
+                            <li>Your Top {planData.blockingPoints.length} Career Blocking Points (and how to fix them)</li>
+                            <li>Your Hidden Strengths (and how to leverage them)</li>
+                            <li>Your Personalized 30-60-90 Day Roadmap</li>
+                        </ul>
+                        <p>This plan is typically valued at <b>{PplanValue}</b>—but you're getting it as a complimentary service today.</p>
+                        <p className="font-bold text-lg text-purple-700">Here's my promise: If you implement even 50% of what's in this plan, you WILL see results within 30 days.</p>
+                        <p>Let's get you that dream job!</p>
+                    </div>
+                     <div className="mt-8 pt-6 border-t">                       
+                        <img 
+                        src="https://brainyscout.com/Content/images/instructor/rajinder.png" 
+                        alt="Rajinder Kumar - Certified Career Coach" 
+                        className="w-16 h-16 rounded-full border-4 border-green-500 shadow-2xl object-cover" 
+                        />
+                        <div className='flex-1'>
+                        <p className="text-indigo-900 font-extrabold text-2xl">Rajinder Kumar</p>
+                        <p className="text-indigo-700 text-md font-semibold">Certified Career Coach</p>
+                        <p className="text-slate-600 text-sm">20+ Years in IT Industry & Co-Founder of BrainyScout</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* PAGE 3: SUMMARY */}
+                <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4 flex items-center gap-3"><BarChart3 className="text-slate-600"/> YOUR CAREER PROFILE AT A GLANCE</h2>
+                    <p className="mb-6 text-slate-600">Based on your assessment, here is a snapshot of your career situation:</p>
+                    <div className="grid md:grid-cols-2 gap-x-8 gap-y-6 bg-slate-50 print-bg-subtle p-6 rounded-xl shadow-inner">
+                        {Object.entries(planData.summary).map(([key, value]) => (
+                             <div key={key} className='border-l-4 border-purple-300 pl-3'>
+                                <p className="text-sm text-purple-500 font-semibold uppercase">{key}</p>
+                                <p className="text-lg text-slate-800 font-bold">{value}</p>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-8 bg-purple-100 print-bg-subtle p-6 rounded-xl border border-purple-300 shadow-md">
+                        <h3 className="font-bold text-purple-800 text-lg mb-2">Key Insight:</h3>
+                        <p className="text-purple-700 text-lg">You have the talent and drive—but your strategy is working against you, not for you.
+                        <strong>This is 100% fixable.</strong></p>
+                    </div>
+                </div>               
+
+                {/* PAGE 4: BLOCKING POINTS */}
+                <div className="print-page bg-white rounded-lg shadow-2xl p-8 md:p-12 break-after-page break-inside-auto">
+                <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4 flex items-center gap-2">
+                    <XCircle className="text-red-500" /> WHAT'S HOLDING YOU BACK
+                </h2>
+
+                <p className="mb-6 text-slate-600">
+                    Based on your responses, here are the TOP {planData.blockingPoints.length} factors blocking your job search success:
+                </p>
+
+                <div className="space-y-8">
+                    {planData.blockingPoints.map((bp, index) => (
+                    <div key={index} className="break-inside-avoid">
+                        <h3 className="font-bold text-xl text-red-600 mb-2">
+                        🚫 BLOCKING POINT #{index + 1}: {bp.title}
+                        </h3>
+                        <div className="prose prose-slate max-w-none text-slate-700">{bp.content}</div>
+                    </div>
+                    ))}
+
+                </div>
+                </div>
+
+                 {/* PAGE 5: STRENGTHS */}
+                <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100 break-before-page">
+                     <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4 flex items-center gap-3"><CheckCircle className="text-green-500"/> WHAT'S WORKING IN YOUR FAVOR</h2>
+                     <p className="mb-6 text-slate-600">You're not starting from zero. Here's what you're doing RIGHT:</p>
+                      <div className="space-y-8">
+                        {planData.strengths.map((s, index) => (
+                           <div key={index} className='p-4 border-b border-green-100'>
+                               <h3 className="font-bold text-xl text-green-600 mb-2">💪 STRENGTH #{index + 1}: {s.title}</h3>
+                               <div className="prose prose-slate max-w-none text-slate-700">{s.content}</div>
+                           </div>
+                        ))}
+                     </div>
+                </div>
+                
+                 {/* PAGE 6: Success Probability */}
+                 <Page_SuccessProbability current={finalSuccessProbability.current} optimized={finalSuccessProbability.withSystem || finalSuccessProbability.optimized} />
+                 
+                 {/* PAGE 7: Coach Profile and Resources (New Page) */}
+                 <Page_CoachProfile />
+
+                 {/* PAGE 8: Roadmap - Content added */}
+                 <Page_Roadmap />
+
+                 {/* PAGE 9: Mistakes - Content added */}
+                 <Page_Mistakes />
+                 
+                 {/* PAGE 10: Success Kit - Content added */}
+                 <Page_SuccessKit />
+
+                 {/* PAGE 11: Investment Options - Pricing logic confirmed and kept */}
+                 <Page_InvestmentOptions isIndia={isIndia} />
+
+                 {/* PAGE 12: Success Stories */}
+                 <Page_SuccessStories />
+                
+  </div>
+</div>
+        
+    );
+};
+
+
 // --- Sub-components for dynamic content sections (keeping original logic for brevity) ---
 const SolutionPitch = () => (
     <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm print-bg-subtle">
@@ -157,21 +408,92 @@ const Strength_Default = () => (
         </ul>
     </>
 );
+// ✅ FIXED DISPLAY TEXT MAPPER — ensures user's answers show correctly
+const getDisplayText = (key: string, value: any) => {
+  if (!value) return "Not specified";
+
+  const map: Record<string, Record<string, string>> = {
+    experience: {
+      fresher: "Fresher (0–1 year)",
+      early: "Early Career (0–3 years)",
+      mid: "Mid-Career (4–10 years)",
+      senior: "Senior Professional (10+ years)",
+      changer: "Career Changer / Transitioning",
+    },
+    challenge: {
+      no_calls: "Applying everywhere, hearing nothing back",
+      resume_rejection: "Resume getting rejected by ATS",
+      interview_rejection: "Getting interviews but no offers",
+      clarity: "Need clarity on the right direction",
+      change: "Want to change careers but feel stuck",
+    },
+    applications: {
+      under10: "Less than 10 applications",
+      "0-20": "0–20 applications (Low Activity)",
+      "20-70": "20–70 applications (Moderate Activity)",
+      "70-150": "70–150 applications (High Activity)",
+      "150+": "150+ applications (Spray & Pray)",
+    },
+    resume_strategy: {
+      same: "Using the same resume everywhere",
+      tweaks: "Minor tweaks for each job",
+      tailor_ats: "Tailored and ATS-Optimized Resume",
+      tailor_no_ats: "Customized, but not ATS checked",
+      ats_optimized: "ATS Optimized Resume",
+    },
+    linkedin: {
+      not_active: "Not active on LinkedIn",
+      under100: "Under 100 connections",
+      "100-500": "100–500 connections",
+      "500+": "500+ connections",
+      "1000+": "1000+ connections",
+    },
+    interviews: {
+      none: "No interviews yet",
+      "1-2": "1–2 interviews so far",
+      "3-5": "3–5 interviews so far",
+      interviewing: "Currently interviewing",
+      offers: "Received offers",
+    },
+    urgency: {
+      asap: "ASAP – within 30 days",
+      "1-3": "Within 1–3 months",
+      "3-6": "Within 3–6 months",
+      exploring: "Just exploring for now",
+    },
+  };
+
+  return map[key]?.[value] || value;
+};
+
 
 // Helper function to generate dynamic content based on answers (simplified for this context)
-const generatePlanContent = (answers: any): PlanContent => {
+const generatePlanContent = (answers: any, userLocation: string): PlanContent => {
   const bpAdded = new Set<string>();
   let blockingPoints: { title: string; content: React.ReactNode }[] = [];
   let strengths: { title: string; content: React.ReactNode }[] = [];
 
-  // --- Your logic (unchanged) ---
-  if (answers.applications === '150+' || answers.resume_strategy === 'same') {
+  // --- 1️⃣ Alias mapping: handles alternate or camelCase keys ---
+  const a = {
+    ...answers,
+    challenge: answers.challenge || answers.primary_challenge,
+    applications: answers.applications || answers.application_volume,
+    resume_strategy: answers.resume_strategy || answers.resumeStrategy,
+    linkedin: answers.linkedin || answers.linkedin_presence,
+    interviews: answers.interviews || answers.interview_count,
+    timeline: answers.timeline || answers.timeline_goal,
+    career_stage: answers.career_stage || answers.careerStage,
+    salary: answers.salary,
+  };
+
+  // --- 2️⃣ Blocking Points Logic ---
+  if (a.applications === '150+' || a.resume_strategy === 'same') {
     blockingPoints.push({ title: "Resume Black Hole Syndrome", content: <BP_ResumeBlackHole /> });
   }
-  if (answers.linkedin === 'not_active' || answers.linkedin === 'under100') {
+  if (a.linkedin === 'not_active' || a.linkedin === 'under100') {
     blockingPoints.push({ title: "LinkedIn Invisibility", content: <BP_LinkedInInvisibility /> });
   }
-  if (answers.interviews === '1-2' || answers.interviews === '3-5') {
+  if (a.interviews === '1-2' || a.interviews === '3-5') {
     blockingPoints.push({ title: "Interview Conversion Problem", content: <BP_InterviewConversion /> });
   }
 
@@ -186,33 +508,54 @@ const generatePlanContent = (answers: any): PlanContent => {
   }
   blockingPoints = blockingPoints.slice(0, 3);
 
-  if (answers.linkedin && ['500+', '1000+'].includes(answers.linkedin)) {
+  // --- 3️⃣ Strengths Logic ---
+  if (a.linkedin && ['500+', '1000+'].includes(a.linkedin)) {
     strengths.push({ title: "Strong LinkedIn Network", content: <Strength_LinkedIn /> });
-  } else if (answers.resume_strategy === 'tailor_ats') {
+  } else if (a.resume_strategy === 'tailor_ats') {
     strengths.push({ title: "Attention to Detail & Technical Savvy", content: <Strength_ATS /> });
   }
   if (strengths.length === 0) {
     strengths.push({ title: "Determination & Resilience", content: <Strength_Default /> });
   }
 
+  // --- 4️⃣ Summary Section (uses aliased `a`) ---
   const summary = {
-    "Career Stage": "Mid-Career (4-10 years)",
-    "Primary Challenge": "Applying everywhere, hearing nothing",
-    "Application Volume": "70-150 (in last 30 days)",
-    "Resume Strategy": "Tailors & ATS-optimizes resume",
-    "LinkedIn Presence": "100-500 connections",
-    "Interview Success": "1-2 interviews",
-    "Timeline Goal": "Land job within 1-3 months",
-    "Salary Target": "₹20L-₹40L",
-  };
+  "Career Stage": getDisplayText("experience", a.experience),
+  "Primary Challenge": getDisplayText("challenge", a.challenge),
+  "Application Volume": getDisplayText("applications", a.applications),
+  "Resume Strategy": getDisplayText("resume_strategy", a.resume_strategy),
+  "LinkedIn Presence": getDisplayText("linkedin", a.linkedin),
+  "Interview Success": getDisplayText("interviews", a.interviews),
+  "Timeline Goal": getDisplayText("urgency", a.urgency),
+  "Salary Target":
+    userLocation === "IN"
+      ? a.salary === "3-8L"
+        ? "₹3L – ₹8L"
+        : a.salary === "8-20L"
+        ? "₹8L – ₹20L"
+        : a.salary === "20-40L"
+        ? "₹20L – ₹40L"
+        : a.salary === "40L+"
+        ? "₹40L+"
+        : "Not specified"
+      : a.salary === "50-80k"
+      ? "$50K – $80K"
+      : a.salary === "80-120k"
+      ? "$80K – $120K"
+      : a.salary === "120-180k"
+      ? "$120K – $180K"
+      : a.salary === "180k+"
+      ? "$180K+"
+      : "Not specified",
+};
 
-  // ✅ Now return an object — successProbability optional
+
+  // ✅ Return final structured data
   return { blockingPoints, strengths, summary };
 };
 
 
 // --- STATIC PAGE COMPONENTS ---
-
 const Page_SuccessProbability = ({ current, optimized }: { current: number; optimized: number }) => (
     <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100">
         <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4 flex items-center gap-3"><TrendingUp className="text-purple-600"/> YOUR SUCCESS PROBABILITY ANALYSIS</h2>
@@ -435,245 +778,6 @@ const Page_SuccessStories = () => (
     </div>
 );
 
-    export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({
-    answers,
-    name,
-    onContinue,
-    location,
-    successProbability,
-    email,
-    shouldSendToWebhook
-    }) => {
-    const userEmail = email || answers?.email || "unknown@example.com"; // ✅ defined here
-    const planData = useMemo(() => generatePlanContent(answers), [answers]);
-    const finalSuccessProbability = successProbability || planData.successProbability || { current: 35, optimized: 90 };
-    const firstName = name ? name.split(' ')[0] : 'there';
-    const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    const isIndia = location === 'IN';
-
-
-
-useEffect(() => {
-  if (!shouldSendToWebhook) return; // Only trigger when flagged true
-
-  const sendPDFToWebhook = async () => {
-    try {
-      const element = document.querySelector(".print-container") as HTMLElement;
-      if (!element) {
-        console.warn("⚠️ No print-container found for PDF generation");
-        return;
-      }
-
-      const html2pdfLib = await import("html2pdf.js");
-      const opt = {
-        margin: 0.5,
-        filename: "Career-Placement-Plan.pdf",
-        image: { type: "jpeg" as const, quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
-      };
-
-      const pdfBlob = await html2pdfLib.default().set(opt).from(element).outputPdf("blob");
-
-      const webhookUrl = "https://hook.us2.make.com/c6yh9h0lq58aca3iwp42uk7fu8b37rey";
-      const formData = new FormData();
-      formData.append("email", email || "unknown@example.com");
-      formData.append("location", location);
-      formData.append("file", pdfBlob, "Career-Placement-Plan.pdf");
-
-      await fetch(webhookUrl, {
-        method: "POST",
-        body: formData,
-        mode: "no-cors", // Required for local development
-      });
-
-      console.log("✅ PDF successfully sent to Make webhook!");
-    } catch (err) {
-      console.error("❌ Failed to send PDF to webhook:", err);
-    }
-  };
-
-  const timer = setTimeout(sendPDFToWebhook, 2000);
-  return () => clearTimeout(timer);
-}, [shouldSendToWebhook, email, location]);
-
-    // Dynamic value based on location for the welcome letter
-    const planValue = isIndia ? '₹6490' : '$189';
-    const PplanValue = isIndia ? '₹2490' : '$49';    
-
-    return (
-        // Main container adjusted for better visual appeal, using a deep purple gradient with dark text.
-        <div className="bg-gradient-to-b from-indigo-900 via-gray-900 to-purple-900 p-4 md:p-8 min-h-screen font-sans text-gray-800 print-container">
-            
-            {/* Fixed Buttons for Online View */}
-            <div className="fixed top-4 right-4 z-50 flex flex-col gap-4 no-print">
-                <button
-  onClick={() => {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const element = document.querySelector(".print-container") as HTMLElement;
-
-    const opt = {
-      margin: 0.5,
-      filename: "Career-Placement-Plan.pdf",
-      image: { type: "jpeg" as const, quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
-    };
-
-    if (!element) {
-      alert("PDF content not found — please try again.");
-      return;
-    }
-
-    // 🖨️ Only handle download/print, no webhook call
-    if (isMobile) {
-      import("html2pdf.js").then((html2pdf) => {
-        html2pdf.default().set(opt).from(element).save();
-      });
-    } else {
-      window.print();
-    }
-  }}
-  className="bg-green-500 text-white font-bold py-3 px-5 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-2xl flex items-center gap-2 border-2 border-green-300"
->
-  <Download size={20} /> Download PDF
-</button>
-
-
-            </div>
-
-            <div className="max-w-4xl mx-auto space-y-8">
-                {/* PAGE 1: COVER PAGE - Added user details */}
-                <div className="print-page bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center text-center p-8 h-[90vh] border-4 border-indigo-200/50">
-                    <img src="https://www.brainyscout.com/Content/images/logo.png" alt="BrainyScout Logo" className="h-10 w-auto mb-4"/>
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-slate-800 mt-12 mb-4">YOUR PERSONALIZED CAREER</h1>
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-purple-600 mb-12">PLACEMENT PLAN</h1>
-                    
-                    <div className="bg-indigo-50 p-6 rounded-xl shadow-lg border-l-4 border-purple-500 max-w-sm w-full">
-                        <p className="text-xl font-semibold text-slate-700">Prepared For:</p>
-                        <p className="text-3xl font-extrabold text-indigo-900 mt-1 mb-2">{name || 'Valued Professional'}</p>
-                        <p className="text-slate-600">Date: {currentDate}</p>
-                    </div>
-
-                    <div className="mt-auto pt-12">
-                         <p className="text-2xl font-semibold text-slate-700 italic">"Your Roadmap to Landing Your Dream Job in 45 Days"</p>
-                         <p className="text-sm text-slate-500 mt-4">Powered by <a href="https://brainyscout.com">www.brainyScout.com</a></p>
-                    </div>
-                </div>
-
-                {/* PAGE 2: WELCOME LETTER - Plan value updated */}
-                <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100">
-                    <h2 className="text-3xl font-bold text-slate-800 mb-6">Dear {firstName},</h2>
-                    <div className="space-y-4 text-slate-700 text-lg leading-relaxed">
-                        <p>Congratulations on taking the first step toward transforming your career!</p>
-                        <p>Based on your responses to our comprehensive career assessment, we've created this personalized placement plan specifically for <b>YOU</b>.</p>
-                        <p>This isn't a generic report. Every insight, recommendation, and action step in this document is tailored to your unique situation, challenges, and goals.</p>
-                        <p className="font-semibold text-slate-800">Inside, you'll discover:</p>
-                        <ul className="list-disc list-inside space-y-2 pl-4">
-                            <li>Your Top {planData.blockingPoints.length} Career Blocking Points (and how to fix them)</li>
-                            <li>Your Hidden Strengths (and how to leverage them)</li>
-                            <li>Your Personalized 30-60-90 Day Roadmap</li>
-                        </ul>
-                        <p>This plan is typically valued at <b>{PplanValue}</b>—but you're getting it as a complimentary service today.</p>
-                        <p className="font-bold text-lg text-purple-700">Here's my promise: If you implement even 50% of what's in this plan, you WILL see results within 30 days.</p>
-                        <p>Let's get you that dream job!</p>
-                    </div>
-                     <div className="mt-8 pt-6 border-t">                       
-                        <img 
-                        src="https://brainyscout.com/Content/images/instructor/rajinder.png" 
-                        alt="Rajinder Kumar - Certified Career Coach" 
-                        className="w-16 h-16 rounded-full border-4 border-green-500 shadow-2xl object-cover" 
-                        />
-                        <div className='flex-1'>
-                        <p className="text-indigo-900 font-extrabold text-2xl">Rajinder Kumar</p>
-                        <p className="text-indigo-700 text-md font-semibold">Certified Career Coach</p>
-                        <p className="text-slate-600 text-sm">20+ Years in IT Industry & Co-Founder of BrainyScout</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* PAGE 3: SUMMARY */}
-                <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100">
-                    <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4 flex items-center gap-3"><BarChart3 className="text-slate-600"/> YOUR CAREER PROFILE AT A GLANCE</h2>
-                    <p className="mb-6 text-slate-600">Based on your assessment, here is a snapshot of your career situation:</p>
-                    <div className="grid md:grid-cols-2 gap-x-8 gap-y-6 bg-slate-50 print-bg-subtle p-6 rounded-xl shadow-inner">
-                        {Object.entries(planData.summary).map(([key, value]) => (
-                             <div key={key} className='border-l-4 border-purple-300 pl-3'>
-                                <p className="text-sm text-purple-500 font-semibold uppercase">{key}</p>
-                                <p className="text-lg text-slate-800 font-bold">{value}</p>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="mt-8 bg-purple-100 print-bg-subtle p-6 rounded-xl border border-purple-300 shadow-md">
-                        <h3 className="font-bold text-purple-800 text-lg mb-2">Key Insight:</h3>
-                        <p className="text-purple-700 text-lg">You have the talent and drive—but your strategy is working against you, not for you.
-                        <strong>This is 100% fixable.</strong></p>
-                    </div>
-                </div>               
-
-                {/* PAGE 4: BLOCKING POINTS */}
-                <div className="print-page bg-white rounded-lg shadow-2xl p-8 md:p-12 break-after-page break-inside-auto">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4 flex items-center gap-2">
-                    <XCircle className="text-red-500" /> WHAT'S HOLDING YOU BACK
-                </h2>
-
-                <p className="mb-6 text-slate-600">
-                    Based on your responses, here are the TOP {planData.blockingPoints.length} factors blocking your job search success:
-                </p>
-
-                <div className="space-y-8">
-                    {planData.blockingPoints.map((bp, index) => (
-                    <div key={index} className="break-inside-avoid">
-                        <h3 className="font-bold text-xl text-red-600 mb-2">
-                        🚫 BLOCKING POINT #{index + 1}: {bp.title}
-                        </h3>
-                        <div className="prose prose-slate max-w-none text-slate-700">{bp.content}</div>
-                    </div>
-                    ))}
-
-                </div>
-                </div>
-
-                 {/* PAGE 5: STRENGTHS */}
-                <div className="print-page bg-white rounded-xl shadow-xl p-8 md:p-12 border border-gray-100 break-before-page">
-                     <h2 className="text-2xl font-bold text-slate-800 mb-6 border-b pb-4 flex items-center gap-3"><CheckCircle className="text-green-500"/> WHAT'S WORKING IN YOUR FAVOR</h2>
-                     <p className="mb-6 text-slate-600">You're not starting from zero. Here's what you're doing RIGHT:</p>
-                      <div className="space-y-8">
-                        {planData.strengths.map((s, index) => (
-                           <div key={index} className='p-4 border-b border-green-100'>
-                               <h3 className="font-bold text-xl text-green-600 mb-2">💪 STRENGTH #{index + 1}: {s.title}</h3>
-                               <div className="prose prose-slate max-w-none text-slate-700">{s.content}</div>
-                           </div>
-                        ))}
-                     </div>
-                </div>
-                
-                 {/* PAGE 6: Success Probability */}
-                 <Page_SuccessProbability current={finalSuccessProbability.current} optimized={finalSuccessProbability.withSystem || finalSuccessProbability.optimized} />
-                 
-                 {/* PAGE 7: Coach Profile and Resources (New Page) */}
-                 <Page_CoachProfile />
-
-                 {/* PAGE 8: Roadmap - Content added */}
-                 <Page_Roadmap />
-
-                 {/* PAGE 9: Mistakes - Content added */}
-                 <Page_Mistakes />
-                 
-                 {/* PAGE 10: Success Kit - Content added */}
-                 <Page_SuccessKit />
-
-                 {/* PAGE 11: Investment Options - Pricing logic confirmed and kept */}
-                 <Page_InvestmentOptions isIndia={isIndia} />
-
-                 {/* PAGE 12: Success Stories */}
-                 <Page_SuccessStories />
-                
-            </div>
-        </div>
-        
-    );
-};
 
 // Required for the component to be callable in the environment
 export default PlacementPlanView;

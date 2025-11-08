@@ -1210,7 +1210,7 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
         <div className="text-center mb-10">
           <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4 animate-bounce" />
           <h1 className="text-4xl font-extrabold text-white mb-3">
-            🎉 Your Personalized Free Placement Plan is Ready!
+            Your Personalized Free Placement Plan is Ready!
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl mx-auto">
                 You can <span className="font-semibold text-orange-400">download</span> it instantly using the button below.
