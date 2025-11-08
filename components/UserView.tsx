@@ -298,6 +298,7 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
   const [multiSelectedOptions, setMultiSelectedOptions] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [location, setLocation] = useState('N/A');
+  const userEmail = (formData && (formData.email || formData['email'])) || "unknown@example.com";
   const [currencySymbol, setCurrencySymbol] = useState('$');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [analysisData, setAnalysisData] = useState<any>(null);
@@ -316,87 +317,6 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
   const QUESTION_SCREENS = useMemo(() => getQuestionScreens(currencySymbol, location), [currencySymbol, location]);
   
   const totalQuestionScreens = QUESTION_SCREENS.length;
-
-    useEffect(() => {
-    if (showPlanForPrint) {
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-        // 🌀 Create loader overlay only for mobile
-        let loader: HTMLDivElement | null = null;
-        if (isMobile) {
-        loader = document.createElement("div");
-        loader.style.position = "fixed";
-        loader.style.top = "0";
-        loader.style.left = "0";
-        loader.style.width = "100vw";
-        loader.style.height = "100vh";
-        loader.style.background = "rgba(0,0,0,0.6)";
-        loader.style.color = "#fff";
-        loader.style.display = "flex";
-        loader.style.justifyContent = "center";
-        loader.style.alignItems = "center";
-        loader.style.fontSize = "1.25rem";
-        loader.style.zIndex = "9999";
-
-        // ✨ Spinner + text content
-        loader.innerHTML = `
-            <div style="text-align:center">
-            <div class="animate-spin mb-3 border-4 border-white border-t-transparent rounded-full w-10 h-10 mx-auto"></div>
-            📄 Generating your PDF...
-            </div>
-        `;
-
-        document.body.appendChild(loader);
-        }
-
-        const timer = setTimeout(() => {
-        if (isMobile) {
-            const element = document.querySelector(".print-container") as HTMLElement;
-            if (element) {
-            import("html2pdf.js").then((html2pdf) => {
-                const opt = {
-                margin: 0.5,
-                filename: "Career-Placement-Plan.pdf",
-                image: { type: "jpeg" as const, quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: {
-                    unit: "in" as const,
-                    format: "a4" as const,
-                    orientation: "portrait" as const,
-                },
-                };
-
-                html2pdf
-                .default()
-                .set(opt)
-                .from(element)
-                .save()
-                .then(() => {
-                    if (loader) document.body.removeChild(loader);
-                    setShowPlanForPrint(false);
-                })
-                .catch(() => {
-                    if (loader) document.body.removeChild(loader);
-                    alert("Something went wrong while generating your PDF.");
-                });
-            });
-            } else {
-            if (loader) document.body.removeChild(loader);
-            alert("PDF content not found — please try again.");
-            }
-        } else {
-            // 💻 Desktop: open print dialog as usual
-            window.print();
-            setShowPlanForPrint(false);
-        }
-        }, 800);
-
-        return () => {
-        clearTimeout(timer);
-        if (loader) document.body.removeChild(loader);
-        };
-    }
-    }, [showPlanForPrint]);
 
   useEffect(() => {
     fetch('https://ipinfo.io?token=d369b6f31b30af')
@@ -542,67 +462,93 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
     }
   };
 
-  const handleContactSubmit = useCallback(async () => {
-    const newErrors: Record<string, boolean> = {};
-    if (!formData.fullName) newErrors.fullName = true;
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = true;
+const handleContactSubmit = useCallback(async () => {
+  // ✅ Validate fields
+  const newErrors: Record<string, boolean> = {};
+  if (!formData.fullName) newErrors.fullName = true;
+  if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = true;
+  if (!formData.phone) newErrors.phone = true;
+  if (!formData.consent) newErrors.consent = true;
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  setIsSubmitting(true);
+
+  // ✅ Save lead data to BrainyScout API first
+  const apiUrl = "https://www.brainyscout.com/API/ReceiveLead";
+  const leadData = {
+    FirstName: formData.fullName.split(" ")[0],
+    LastName: formData.fullName.split(" ").slice(1).join(" ") || "",
+    Email: formData.email,
+    Phone: formData.phone,
+    IsSubscribe: formData.consent,
+    SubmissionDateTime: new Date().toISOString(),
+    LeadSourceId: 6,
+    Status: "New",
+    NextTriggerDate: new Date().toISOString().split("T")[0],
+    CurrentTemplateId: 1,
+    CountryCode: location || "",
+    UserAccountId: "",
+  };
+
+  const formBody = new URLSearchParams(
+    Object.entries(leadData).map(([key, value]) => [key, value.toString()])
+  );
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formBody.toString(),
+    });
+
+    console.log("✅ Lead sent:", response.status);
+  } catch (error) {
+    console.error("❌ Failed to save lead:", error);
+  }
+
+  // ✅ Generate PDF and send to webhook
+  try {
+    const element = document.querySelector(".print-container") as HTMLElement;
+    if (element) {
+      const html2pdf = (await import("html2pdf.js")).default;
+
+      const opt = {
+        margin: 0.5,
+        filename: "Career-Placement-Plan.pdf",
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
+      };
+
+      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf("blob");
+
+      const formDataWebhook = new FormData();
+      formDataWebhook.append("email", formData.email);
+      formDataWebhook.append("location", location);
+      formDataWebhook.append("file", pdfBlob, "Career-Placement-Plan.pdf");
+
+      await fetch("https://hook.us2.make.com/c6yh9h0lq58aca3iwp42uk7fu8b37rey", {
+        method: "POST",
+        body: formDataWebhook,
+        mode: "no-cors",
+      });
+
+      console.log("✅ PDF sent to Make webhook");
     }
-    if (!formData.phone) newErrors.phone = true;
-    if (!formData.consent) newErrors.consent = true;
+  } catch (err) {
+    console.error("❌ PDF generation or webhook failed:", err);
+  }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-    
-    setIsSubmitting(true);
+  // ✅ Continue flow
+  setIsSubmitting(false);
+  onSubmission(formData.email, formData, location);
+  setCurrentScreen(26);
+}, [formData, location, onSubmission]);
 
-    const leadData = {
-        FirstName: formData.fullName.split(' ')[0],
-        LastName: formData.fullName.split(' ').slice(1).join(' ') || '',
-        Email: formData.email,
-        Phone: formData.phone,
-        IsSubscribe: formData.consent,
-        SubmissionDateTime: new Date().toISOString(),
-        LeadSourceId: 6,
-        Status: 'New',
-        NextTriggerDate: new Date().toISOString().split('T')[0],
-        CurrentTemplateId: 1,
-        CountryCode: location || '',
-        UserAccountId: ''
-    };
-    
-    const formBody = new URLSearchParams(
-        Object.entries(leadData).map(([key, value]) => [key, value.toString()])
-    );
 
-    const apiUrl = 'https://www.brainyscout.com/API/ReceiveLead';
-
-    try {
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: formBody.toString(),
-        });
-
-        if (!response.ok) {
-            const text = await response.text();
-            console.error('API Error:', response.status, text);
-        } else {
-            console.log('✅ Lead successfully sent:', await response.text());
-        }
-    } catch (error) {
-        console.error('❌ Network error while saving lead:', error);
-    } finally {
-        onSubmission(formData.email, formData, location);
-        setIsSubmitting(false);
-        // Go directly to the offer page
-        setCurrentScreen(26);
-    }
-  }, [formData, location, onSubmission]);
 
   const handleDownloadPlan = () => {
     setShowPlanForPrint(true);
@@ -1206,7 +1152,35 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
                 </div>
                  <div>
                     <label className="block text-sm font-semibold text-slate-300 mb-2">Phone Number *</label>
-                    <input type="tel" placeholder="+1 (555) 000-0000" value={formData.phone || ''} onChange={(e) => { setFormData(p => ({ ...p, phone: e.target.value })); setErrors(p => ({ ...p, phone: false })); }} className={`w-full px-4 py-3 rounded-xl border bg-[#3D0090] placeholder-gray-400 ${errors.phone ? 'border-red-500' : 'border-[#A76EFF]/40'} focus:ring-2 focus:ring-[#FF7A00] outline-none transition-all`} />
+                    <input
+                            type="tel"
+                            placeholder="+1 (555) 000-0000"
+                            value={formData.phone || ""}
+                            onChange={(e) => {
+                                // ✅ Keep only numbers and an optional leading "+"
+                                const cleaned = e.target.value.replace(/[^\d+]/g, "");
+
+                                // ✅ Limit "+" to only the first character
+                                const normalized = cleaned.startsWith("+")
+                                ? "+" + cleaned.slice(1).replace(/\+/g, "")
+                                : cleaned.replace(/\+/g, "");
+
+                                setFormData((p) => ({ ...p, phone: normalized }));
+                                setErrors((p) => ({ ...p, phone: false }));
+                            }}
+                            onBlur={() => {
+                                // ✅ Validate minimum 8 digits on blur
+                                if (!/^\+?\d{8,15}$/.test(formData.phone || "")) {
+                                setErrors((p) => ({ ...p, phone: true }));
+                                }
+                            }}
+                            inputMode="numeric"
+                            maxLength={16}
+                            className={`w-full px-4 py-3 rounded-xl border bg-[#3D0090] placeholder-gray-400 ${
+                                errors.phone ? "border-red-500" : "border-[#A76EFF]/40"
+                            } focus:ring-2 focus:ring-[#FF7A00] outline-none transition-all`}
+                            />
+
                 </div>
                 <div className="flex items-start gap-3 pt-2">
                     <input type="checkbox" id="consent" checked={formData.consent || false} onChange={(e) => { setFormData(p => ({ ...p, consent: e.target.checked })); setErrors(p => ({ ...p, consent: false })); }} className="mt-1 w-5 h-5 accent-[#FF7A00] bg-gray-700 border-gray-600 rounded" />
@@ -1214,7 +1188,7 @@ export const UserView: React.FC<UserViewProps> = ({ onSubmission, onSwitchToAdmi
                 </div>
                  {errors.consent && <p className="text-red-400 text-sm -mt-2">Please accept to continue</p>}
                  <button onClick={handleContactSubmit} disabled={isSubmitting} className={`w-full text-center py-4 rounded-xl font-bold text-lg text-white shadow-xl transition-all ${isSubmitting ? 'bg-slate-700 cursor-not-allowed' : 'bg-gradient-to-r from-[#FF7A00] to-[#FFB84D] hover:scale-105'}`}>
-                    {isSubmitting ? 'Submitting...' : 'Send Me My Free Plan Now'}
+                    {isSubmitting ? 'Generating Your Plan...' : 'Generate My Free Career Plan Now'}
                 </button>
                 <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
                     <span className="flex items-center gap-1"><ShieldCheck size={14}/> 100% Secure</span>
@@ -1239,7 +1213,8 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
             ✅ SUCCESS! Your Free Placement Plan is On Its Way!
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl mx-auto">
-            Check your email (including spam folder) - your personalized career roadmap will arrive in the next 2 minutes.
+             🎉 Your personalized <span className="font-semibold text-orange-400">Career Placement Plan</span> 
+                is ready! You can download it instantly using the button below.
           </p>
         </div>
 
@@ -1495,10 +1470,10 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
             <div className="mt-6 text-center">
               <button
                 onClick={() => setCurrentScreen(29)}
-                className="w-full text-slate-400 hover:text-white transition-colors text-sm py-3"
-              >
+                className="w-full py-3 mt-4 rounded-xl border border-gray-500 text-slate-300 font-semibold text-sm bg-transparent hover:bg-slate-800 hover:text-white transition-all duration-300 shadow-md"
+                >
                 No Thanks, I'll Try Alone — Just Give Me the Plan
-              </button>
+                </button>
             </div>
 
             {/* Expiry Note */}
@@ -1587,7 +1562,14 @@ if (currentScreen === 26) { // Thank You / Offer Page (MONEY PAGE) - Final Optim
   return (
     <div>
         {showPlanForPrint ? (
-            <PlacementPlanView answers={formData} name={formData.fullName || 'Valued Professional'} onContinue={() => {}} location={location} />
+            <PlacementPlanView 
+                answers={formData} 
+                name={formData.fullName || 'Valued Professional'} 
+                onContinue={() => {}} 
+                location={location} 
+                email={formData.email}            // ✅ pass email
+                shouldSendToWebhook={true}        // ✅ triggers webhook when mounted
+                />
         ) : (
             <>
                 {showHeader && (

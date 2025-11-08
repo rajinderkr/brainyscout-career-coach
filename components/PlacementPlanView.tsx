@@ -1,15 +1,18 @@
 import React, { useMemo } from 'react';
 import html2pdf from "html2pdf.js";
+import { useEffect } from "react"; // ✅ ensure you have this import at top
 import { Download, ArrowRight, XCircle, CheckCircle, BarChart3, TrendingUp, Briefcase, Zap, Target, Users, Award, Star, FileText, Link, GraduationCap } from 'lucide-react';
 // Note: Assuming 'Answers' type is defined elsewhere in the project environment.
 // import { Answers } from '../types';
 
 interface PlacementPlanViewProps {
-  answers: any; // Using 'any' as 'Answers' type is undefined here
+  answers: any;
   name: string;
   onContinue: () => void;
   location: string;
-  successProbability?: { current: number; withSystem: number }; // ✅ added
+  email?: string;
+  successProbability?: { current: number; withSystem: number };
+  shouldSendToWebhook?: boolean; // ✅ new
 }
 
 type PlanContent = {
@@ -18,7 +21,6 @@ type PlanContent = {
   summary: Record<string, string>;
   successProbability?: { current: number; optimized: number }; // ✅ optional now
 };
-
 
 // --- Sub-components for dynamic content sections (keeping original logic for brevity) ---
 const SolutionPitch = () => (
@@ -433,16 +435,71 @@ const Page_SuccessStories = () => (
     </div>
 );
 
-export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({ answers, name, onContinue, location, successProbability }) => {
-
+    export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({
+    answers,
+    name,
+    onContinue,
+    location,
+    successProbability,
+    email,
+    shouldSendToWebhook
+    }) => {
+    const userEmail = email || answers?.email || "unknown@example.com"; // ✅ defined here
     const planData = useMemo(() => generatePlanContent(answers), [answers]);
     const finalSuccessProbability = successProbability || planData.successProbability || { current: 35, optimized: 90 };
     const firstName = name ? name.split(' ')[0] : 'there';
     const currentDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const isIndia = location === 'IN';
+
+
+
+useEffect(() => {
+  if (!shouldSendToWebhook) return; // Only trigger when flagged true
+
+  const sendPDFToWebhook = async () => {
+    try {
+      const element = document.querySelector(".print-container") as HTMLElement;
+      if (!element) {
+        console.warn("⚠️ No print-container found for PDF generation");
+        return;
+      }
+
+      const html2pdfLib = await import("html2pdf.js");
+      const opt = {
+        margin: 0.5,
+        filename: "Career-Placement-Plan.pdf",
+        image: { type: "jpeg" as const, quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
+      };
+
+      const pdfBlob = await html2pdfLib.default().set(opt).from(element).outputPdf("blob");
+
+      const webhookUrl = "https://hook.us2.make.com/c6yh9h0lq58aca3iwp42uk7fu8b37rey";
+      const formData = new FormData();
+      formData.append("email", email || "unknown@example.com");
+      formData.append("location", location);
+      formData.append("file", pdfBlob, "Career-Placement-Plan.pdf");
+
+      await fetch(webhookUrl, {
+        method: "POST",
+        body: formData,
+        mode: "no-cors", // Required for local development
+      });
+
+      console.log("✅ PDF successfully sent to Make webhook!");
+    } catch (err) {
+      console.error("❌ Failed to send PDF to webhook:", err);
+    }
+  };
+
+  const timer = setTimeout(sendPDFToWebhook, 2000);
+  return () => clearTimeout(timer);
+}, [shouldSendToWebhook, email, location]);
+
     // Dynamic value based on location for the welcome letter
     const planValue = isIndia ? '₹6490' : '$189';
-    const PplanValue = isIndia ? '₹2490' : '$49';
+    const PplanValue = isIndia ? '₹2490' : '$49';    
 
     return (
         // Main container adjusted for better visual appeal, using a deep purple gradient with dark text.
@@ -451,42 +508,44 @@ export const PlacementPlanView: React.FC<PlacementPlanViewProps> = ({ answers, n
             {/* Fixed Buttons for Online View */}
             <div className="fixed top-4 right-4 z-50 flex flex-col gap-4 no-print">
                 <button
-                    onClick={() => {
-                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                        const element = document.querySelector(".print-container") as HTMLElement;
+  onClick={() => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const element = document.querySelector(".print-container") as HTMLElement;
 
-                        const opt = {
-                        margin: 0.5,
-                        filename: "Career-Placement-Plan.pdf",
-                        image: { type: "jpeg" as const, quality: 0.98 },
-                        html2canvas: { scale: 2 },
-                        jsPDF: {
-                            unit: "in" as const,
-                            format: "a4" as const,
-                            orientation: "portrait" as const,
-                        },
-                        };
+    const opt = {
+      margin: 0.5,
+      filename: "Career-Placement-Plan.pdf",
+      image: { type: "jpeg" as const, quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in" as const, format: "a4" as const, orientation: "portrait" as const },
+    };
 
-                        if (isMobile) {
-                        if (element) {
-                            html2pdf().set(opt).from(element).save();
-                        } else {
-                            alert("PDF content not found — please try again.");
-                        }
-                        } else {
-                        window.print();
-                        }
-                    }}
-                    className="bg-green-500 text-white font-bold py-3 px-5 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-2xl flex items-center gap-2 border-2 border-green-300"
-                    >
-                    <Download size={20} /> Download PDF
-                    </button>
+    if (!element) {
+      alert("PDF content not found — please try again.");
+      return;
+    }
+
+    // 🖨️ Only handle download/print, no webhook call
+    if (isMobile) {
+      import("html2pdf.js").then((html2pdf) => {
+        html2pdf.default().set(opt).from(element).save();
+      });
+    } else {
+      window.print();
+    }
+  }}
+  className="bg-green-500 text-white font-bold py-3 px-5 rounded-full text-lg transition-all duration-300 hover:scale-105 shadow-2xl flex items-center gap-2 border-2 border-green-300"
+>
+  <Download size={20} /> Download PDF
+</button>
+
+
             </div>
 
             <div className="max-w-4xl mx-auto space-y-8">
                 {/* PAGE 1: COVER PAGE - Added user details */}
                 <div className="print-page bg-white rounded-xl shadow-2xl flex flex-col items-center justify-center text-center p-8 h-[90vh] border-4 border-indigo-200/50">
-                    <img src="https://brainyscout.com/Content/images/logo-dark.png" alt="BrainyScout Logo" className="h-10 w-auto mb-12"/>
+                    <img src="https://www.brainyscout.com/Content/images/logo.png" alt="BrainyScout Logo" className="h-10 w-auto mb-12"/>
                     <h1 className="text-4xl md:text-6xl font-extrabold text-slate-800 mt-12 mb-4">YOUR PERSONALIZED CAREER</h1>
                     <h1 className="text-4xl md:text-6xl font-extrabold text-purple-600 mb-12">PLACEMENT PLAN</h1>
                     
